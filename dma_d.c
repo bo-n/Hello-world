@@ -192,3 +192,38 @@ struct file_operations Fops= {
 				  .open = device_open,
 				  .release = device_release /*close*/
 				  };
+/*
+*
+*/
+int init_module()
+{
+	// int ret_val=0;
+	major_num = register_chrdev(0, DEVICE_NAME, &Fops);
+	if(major_num < 0)
+	{
+		//printk(KERN_ALERT "%s failed with %d\n","Sorry, registerging the character device ",ret_val);
+		return -1;
+	}
+ printk(KERN_INFO "%s The major device number is %d.\n","Registeration is a success",major_num);
+// printk(KERN_INFO "If you want to talk to the device driver,\n");
+// printk(KERN_INFO "Than create a device file by following command. \n");
+// printk(KERN_INFO "mknod %s c %d 0\n", DEVICE_FILE_NAME, major_num);
+// printk(KERN_INFO "The device file name is important, because\n");
+// printk(KERN_INFO "the ioctl program assume that's the\n");
+// printk(KERN_INFO "file you'll use.\n");
+    dev_map_addr=ioremap(XPAR_PS7_TOP_BASEDDR, XPAR_PS7_TOP_REG_SIZE);
+	if(dev_map_addr<0)
+	{
+	//	printk(KERN_INFO "failed! Sorry, mapping error ");
+		return -1;
+	}
+	return 0;
+}
+void cleanup_module()
+{
+	iounmap(dev_map_addr);
+	unregister_chrdev(major_num,DEVICE_NAME);
+}
+
+
+MODULE_LICENSE("GPL");
